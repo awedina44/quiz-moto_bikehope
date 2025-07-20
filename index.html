@@ -1,456 +1,188 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quiz Moto</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: Arial, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; color: white; }
-        .container { max-width: 800px; margin: 0 auto; padding: 20px; }
-        .screen { display: none; background: rgba(255,255,255,0.1); border-radius: 15px; padding: 30px; margin: 20px 0; backdrop-filter: blur(10px); }
-        .screen.active { display: block; }
-        h1, h2 { text-align: center; margin-bottom: 20px; }
-        .form-group { margin: 15px 0; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input, select, button { width: 100%; padding: 12px; border: none; border-radius: 8px; font-size: 16px; }
-        button { background: #ff6b6b; color: white; cursor: pointer; margin: 10px 0; transition: all 0.3s; }
-        button:hover { background: #ff5252; transform: translateY(-2px); }
-        .quiz-container { text-align: center; }
-        .moto-image { width: 100%; max-width: 400px; height: 250px; object-fit: cover; border-radius: 10px; margin: 20px 0; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
-        .timer { font-size: 24px; font-weight: bold; color: #ff6b6b; margin: 10px 0; }
-        .timer.warning { color: #ffa500; animation: pulse 1s infinite; }
-        .timer.critical { color: #ff0000; animation: pulse 0.5s infinite; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.7; } }
-        .question-counter { margin: 10px 0; font-size: 18px; }
-        .choices { display: grid; gap: 10px; margin: 20px 0; }
-        .choice { background: rgba(255,255,255,0.2); padding: 15px; border-radius: 8px; cursor: pointer; transition: all 0.3s; }
-        .choice:hover { background: rgba(255,255,255,0.3); }
-        .choice.correct { background: #4caf50; }
-        .choice.incorrect { background: #f44336; }
-        .leaderboard { background: rgba(255,255,255,0.1); border-radius: 10px; padding: 20px; margin: 20px 0; }
-        .profile-item, .score-item { background: rgba(255,255,255,0.1); margin: 10px 0; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; }
-        .badges { display: flex; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
-        .badge { background: #ffd700; color: #333; padding: 5px 10px; border-radius: 15px; font-size: 12px; }
-    </style>
+  <meta charset="UTF-8">
+  <title>Quiz Moto</title>
+  <style>
+    body { font-family: Arial; text-align: center; padding: 20px; }
+    .screen { display: none; }
+    .visible { display: block; }
+    .badge { display: inline-block; background: gold; padding: 5px 10px; border-radius: 10px; margin: 5px; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>🏍️ Quiz Moto</h1>
-        
-        <!-- Écran de connexion -->
-        <div id="loginScreen" class="screen active">
-            <h2>Connexion / Nouveau Profil</h2>
-            <div class="form-group">
-                <label>Choisir un profil existant :</label>
-                <select id="existingProfile">
-                    <option value="">-- Nouveau profil --</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label>Prénom :</label>
-                <input type="text" id="firstName" placeholder="Votre prénom">
-            </div>
-            <div class="form-group">
-                <label>Gamertag :</label>
-                <input type="text" id="gamertag" placeholder="Votre gamertag">
-            </div>
-            <button onclick="loginOrCreate()">Commencer</button>
-            <button onclick="showLeaderboard()">Voir le classement</button>
-        </div>
+  <h1>Quiz Moto</h1>
 
-        <!-- Écran principal -->
-        <div id="mainScreen" class="screen">
-            <h2 id="welcomeMessage"></h2>
-            <div class="leaderboard">
-                <h3>Vos statistiques</h3>
-                <p>Score total: <span id="totalScore">0</span> points</p>
-                <p>Meilleur score: <span id="bestScore">0</span> points</p>
-                <p>Parties jouées: <span id="gamesPlayed">0</span></p>
-                <div id="userBadges" class="badges"></div>
-            </div>
-            <button onclick="startQuiz()">Commencer un Quiz</button>
-            <button onclick="showHistory()">Historique des scores</button>
-            <button onclick="showLeaderboard()">Classement général</button>
-            <button onclick="logout()">Changer de profil</button>
-        </div>
+  <!-- Écran de connexion -->
+  <div id="loginScreen" class="screen visible">
+    <h2>Connexion</h2>
+    <select id="existingProfile"></select><br><br>
+    <input type="text" id="firstName" placeholder="Prénom">
+    <input type="text" id="gamertag" placeholder="Gamertag">
+    <button onclick="loginOrCreate()">Commencer</button>
+  </div>
 
-        <!-- Écran de quiz -->
-        <div id="quizScreen" class="screen">
-            <div class="question-counter">Question <span id="currentQuestion">1</span> / <span id="totalQuestions">10</span></div>
-            <div class="timer" id="timer">60</div>
-            <div class="quiz-container">
-                <img id="motoImage" class="moto-image" src="" alt="Moto">
-                <div id="choices" class="choices"></div>
-                <div>Score: <span id="currentScore">0</span> points</div>
-            </div>
-        </div>
+  <!-- Écran principal -->
+  <div id="mainScreen" class="screen">
+    <h2 id="welcomeMessage"></h2>
+    <p id="stats"></p>
+    <button onclick="startQuiz()">Lancer le quiz</button>
+    <div id="badges"></div>
+  </div>
 
-        <!-- Écran des résultats -->
-        <div id="resultScreen" class="screen">
-            <h2>Résultats du Quiz</h2>
-            <div id="finalScore"></div>
-            <div id="newBadges"></div>
-            <button onclick="backToMain()">Retour au menu</button>
-            <button onclick="startQuiz()">Rejouer</button>
-        </div>
+  <!-- Écran du quiz -->
+  <div id="quizScreen" class="screen">
+    <h2 id="question"></h2>
+    <div id="choices"></div>
+  </div>
 
-        <!-- Écran du classement -->
-        <div id="leaderboardScreen" class="screen">
-            <h2>Classement Général</h2>
-            <div id="leaderboardList"></div>
-            <button onclick="backToMain()">Retour</button>
-        </div>
+  <!-- Écran des résultats -->
+  <div id="resultScreen" class="screen">
+    <h2>Résultat</h2>
+    <p id="result"></p>
+    <button onclick="goToMain()">Retour</button>
+  </div>
 
-        <!-- Écran historique -->
-        <div id="historyScreen" class="screen">
-            <h2>Historique des Scores</h2>
-            <div id="historyList"></div>
-            <button onclick="backToMain()">Retour</button>
-        </div>
-    </div>
+  <!-- Firebase SDK + Quiz Logic -->
+  <script type="module">
+    // Firebase imports
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc, getDocs, collection } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-    <script>
-        // Base de données des motos avec vraies images libres de droits
-        const motos = [
-            {
-                image: "https://farm5.staticflickr.com/4202/34865106875_7a26fe6089.jpg",
-                marque: "Yamaha", modele: "YZF-R6", annee: "2017", type: "sportive"
-            },
-            {
-                image: "https://live.staticflickr.com/65535/52685772385_5f8df224a8.jpg",
-                marque: "BMW", modele: "S 1000 RR", annee: "2020", type: "hypersport"
-            },
-            {
-                image: "https://s1.cdn.autoevolution.com/images/moto_gallery/BMW-R-1200-GS-Adventure-10835_3.jpg",
-                marque: "BMW", modele: "R 1200 GS", annee: "2016", type: "aventure"
-            },
-            {
-                image: "https://www.motorencyclopedie.nl/motorencyclopedie/yamaha-mt07/2.jpg",
-                marque: "Yamaha", modele: "MT-07", annee: "2017", type: "roadster"
-            },
-            {
-                image: "https://www.motorencyclopedie.nl/motorencyclopedie/yamaha-mt07/2.jpg",
-                marque: "Honda", modele: "CBR600RR", annee: "2016", type: "sportive"
-            },
-            {
-                image: "https://www.motorencyclopedie.nl/motorencyclopedie/yamaha-mt07/2.jpg",
-                marque: "Kawasaki", modele: "Ninja ZX-6R", annee: "2019", type: "sportive"
-            },
-            {
-                image: "https://www.motorencyclopedie.nl/motorencyclopedie/yamaha-mt07/2.jpg",
-                marque: "Harley-Davidson", modele: "Street Glide", annee: "2016", type: "touring"
-            },
-            {
-                image: "https://www.motorencyclopedie.nl/motorencyclopedie/yamaha-mt07/2.jpg",
-                marque: "Suzuki", modele: "GSX-R1000", annee: "2020", type: "superbike"
-            },
-            {
-                image: "https://www.motorencyclopedie.nl/motorencyclopedie/yamaha-mt07/2.jpg",
-                marque: "Ducati", modele: "Panigale V4", annee: "2018", type: "superbike"
-            },
-            {
-                image: "https://www.motorencyclopedie.nl/motorencyclopedie/yamaha-mt07/2.jpg",
-                marque: "KTM", modele: "Duke 390", annee: "2017", type: "naked"
-            },
-            {
-                image: "https://www.motorencyclopedie.nl/motorencyclopedie/yamaha-mt07/2.jpg",
-                marque: "Triumph", modele: "Speed Triple", annee: "2019", type: "roadster"
-            },
-            {
-                image: "https://www.motorencyclopedie.nl/motorencyclopedie/yamaha-mt07/2.jpg",
-                marque: "Yamaha", modele: "XV950", annee: "2016", type: "custom"
-            }
-        ];
+    const firebaseConfig = {
+      apiKey: "AIzaSyDQKrs5BTCg_KOkOg5Qhm1xDjk0O9-XzAA",
+      authDomain: "quiz-moto-9aedd.firebaseapp.com",
+      projectId: "quiz-moto-9aedd",
+      storageBucket: "quiz-moto-9aedd.firebasestorage.app",
+      messagingSenderId: "113444665192",
+      appId: "1:113444665192:web:81afbddbf9062cdb0a08dd",
+      measurementId: "G-VNH2D9FEDF"
+    };
 
-        // Variables pour éviter l'usage de localStorage (non supporté dans Claude.ai)
-        let profiles = {};
-        let currentUser = null;
-        let currentQuiz = [];
-        let currentQuestionIndex = 0;
-        let timer = null;
-        let timeLeft = 60;
-        let sessionScore = 0;
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
 
-        // Badges système
-        const badges = {
-            first_quiz: { name: "Premier Quiz", condition: (stats) => stats.gamesPlayed >= 1 },
-            perfect_score: { name: "Score Parfait", condition: (stats) => stats.bestScore >= 5 },
-            speedster: { name: "Rapide", condition: (stats) => stats.gamesPlayed >= 5 },
-            expert: { name: "Expert", condition: (stats) => stats.totalScore >= 50 }
+    // Variables
+    let profiles = {};
+    let currentUser = null;
+    const questions = [
+      { q: "Quelle moto est une Yamaha ?", options: ["CBR600", "YZF-R6", "Z750", "Panigale"], answer: 1 },
+      { q: "Quel équipement est obligatoire ?", options: ["Casque", "Gants", "Gilet jaune", "Bottes"], answer: 0 }
+    ];
+    let currentQuestion = 0;
+    let score = 0;
+
+    // Fonctions d'affichage
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach(div => div.classList.remove('visible'));
+      document.getElementById(id).classList.add('visible');
+    }
+
+    // Chargement des profils depuis Firestore
+    async function loadExistingProfiles() {
+      const select = document.getElementById('existingProfile');
+      select.innerHTML = '<option value="">-- Nouveau profil --</option>';
+      profiles = {};
+      const snapshot = await getDocs(collection(db, "profiles"));
+      snapshot.forEach(docSnap => {
+        const p = docSnap.data();
+        profiles[p.id] = p;
+        select.innerHTML += `<option value="${p.id}">${p.firstName} (${p.gamertag})</option>`;
+      });
+    }
+
+    // Connexion ou création
+    async function loginOrCreate() {
+      const existingId = document.getElementById('existingProfile').value;
+      const firstName = document.getElementById('firstName').value.trim();
+      const gamertag = document.getElementById('gamertag').value.trim();
+
+      if (existingId) {
+        currentUser = profiles[existingId];
+      } else if (firstName && gamertag) {
+        const id = Date.now().toString();
+        currentUser = {
+          id, firstName, gamertag,
+          totalScore: 0, bestScore: 0, gamesPlayed: 0,
+          history: [], badges: []
         };
+        profiles[id] = currentUser;
+        await setDoc(doc(db, "profiles", id), currentUser);
+      } else {
+        alert("Remplis tous les champs ou choisis un profil.");
+        return;
+      }
 
-        function showScreen(screenId) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-            document.getElementById(screenId).classList.add('active');
-        }
+      document.getElementById('welcomeMessage').textContent = `Bienvenue ${currentUser.firstName} !`;
+      updateUserStats();
+      showScreen('mainScreen');
+    }
 
-        function loadExistingProfiles() {
-            const select = document.getElementById('existingProfile');
-            select.innerHTML = '<option value="">-- Nouveau profil --</option>';
-            Object.keys(profiles).forEach(id => {
-                const profile = profiles[id];
-                select.innerHTML += `<option value="${id}">${profile.firstName} (${profile.gamertag})</option>`;
-            });
-        }
+    // Statistiques utilisateur
+    function updateUserStats() {
+      document.getElementById('stats').textContent = `Parties: ${currentUser.gamesPlayed} | Score total: ${currentUser.totalScore} | Meilleur: ${currentUser.bestScore}`;
+      document.getElementById('badges').innerHTML = currentUser.badges.map(b => `<span class="badge">${b}</span>`).join('');
+    }
 
-        function loginOrCreate() {
-            const existingId = document.getElementById('existingProfile').value;
-            const firstName = document.getElementById('firstName').value.trim();
-            const gamertag = document.getElementById('gamertag').value.trim();
+    // Démarrer le quiz
+    function startQuiz() {
+      score = 0;
+      currentQuestion = 0;
+      showScreen('quizScreen');
+      showQuestion();
+    }
 
-            if (existingId) {
-                currentUser = profiles[existingId];
-            } else if (firstName && gamertag) {
-                const id = Date.now().toString();
-                currentUser = {
-                    id, firstName, gamertag,
-                    totalScore: 0, bestScore: 0, gamesPlayed: 0,
-                    history: [], badges: []
-                };
-                profiles[id] = currentUser;
-            } else {
-                alert('Veuillez remplir tous les champs ou sélectionner un profil existant');
-                return;
-            }
+    // Afficher une question
+    function showQuestion() {
+      const q = questions[currentQuestion];
+      document.getElementById('question').textContent = q.q;
+      const container = document.getElementById('choices');
+      container.innerHTML = "";
+      q.options.forEach((opt, i) => {
+        const btn = document.createElement("button");
+        btn.textContent = opt;
+        btn.onclick = () => answerQuestion(i);
+        container.appendChild(btn);
+      });
+    }
 
-            document.getElementById('welcomeMessage').textContent = `Bienvenue ${currentUser.firstName} !`;
-            updateUserStats();
-            showScreen('mainScreen');
-        }
+    // Répondre à une question
+    async function answerQuestion(choice) {
+      if (choice === questions[currentQuestion].answer) score += 1;
+      currentQuestion += 1;
+      if (currentQuestion < questions.length) {
+        showQuestion();
+      } else {
+        await endQuiz();
+      }
+    }
 
-        function updateUserStats() {
-            document.getElementById('totalScore').textContent = currentUser.totalScore;
-            document.getElementById('bestScore').textContent = currentUser.bestScore;
-            document.getElementById('gamesPlayed').textContent = currentUser.gamesPlayed;
-            
-            const badgesDiv = document.getElementById('userBadges');
-            badgesDiv.innerHTML = '';
-            currentUser.badges.forEach(badge => {
-                badgesDiv.innerHTML += `<span class="badge">${badge}</span>`;
-            });
-        }
+    // Fin du quiz
+    async function endQuiz() {
+      const msg = `Score: ${score}/${questions.length}`;
+      document.getElementById('result').textContent = msg;
+      currentUser.totalScore += score;
+      currentUser.gamesPlayed += 1;
+      currentUser.bestScore = Math.max(currentUser.bestScore, score);
+      currentUser.history.push({ date: new Date().toISOString(), score });
 
-        function startQuiz() {
-            currentQuiz = [...motos].sort(() => Math.random() - 0.5).slice(0, 10);
-            currentQuestionIndex = 0;
-            sessionScore = 0;
-            timeLeft = 60;
-            document.getElementById('currentScore').textContent = sessionScore;
-            document.getElementById('totalQuestions').textContent = currentQuiz.length;
-            showQuestion();
-            showScreen('quizScreen');
-            startSessionTimer();
-        }
+      // Gagner des badges
+      if (score === questions.length && !currentUser.badges.includes("Parfait !")) {
+        currentUser.badges.push("Parfait !");
+      }
 
-        function showQuestion() {
-            if (currentQuestionIndex >= currentQuiz.length || timeLeft <= 0) {
-                endQuiz();
-                return;
-            }
+      await setDoc(doc(db, "profiles", currentUser.id), currentUser);
+      updateUserStats();
+      showScreen('resultScreen');
+    }
 
-            const moto = currentQuiz[currentQuestionIndex];
-            document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
-            
-            // Utilisation d'une image de fallback si l'image ne charge pas
-            const img = document.getElementById('motoImage');
-            img.src = moto.image;
-            img.onerror = function() {
-                this.src = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='250' viewBox='0 0 400 250'%3E%3Crect width='400' height='250' fill='%234f46e5'/%3E%3Ctext x='200' y='125' text-anchor='middle' fill='white' font-size='18' font-family='Arial'%3E${moto.marque} ${moto.modele}%3C/text%3E%3C/svg%3E`;
-            };
+    // Retour accueil
+    function goToMain() {
+      showScreen('mainScreen');
+    }
 
-            // Générer des choix multiples
-            const choices = generateChoices(moto);
-            const choicesDiv = document.getElementById('choices');
-            choicesDiv.innerHTML = '';
-            
-            choices.forEach((choice, index) => {
-                const div = document.createElement('div');
-                div.className = 'choice';
-                div.textContent = `${choice.marque} ${choice.modele} (${choice.annee})`;
-                div.onclick = () => selectAnswer(choice, moto, div);
-                choicesDiv.appendChild(div);
-            });
-        }
-
-        function generateChoices(correctMoto) {
-            const choices = [correctMoto];
-            const otherMotos = motos.filter(m => m !== correctMoto);
-            
-            while (choices.length < 4 && otherMotos.length > 0) {
-                const randomIndex = Math.floor(Math.random() * otherMotos.length);
-                choices.push(otherMotos.splice(randomIndex, 1)[0]);
-            }
-            
-            return choices.sort(() => Math.random() - 0.5);
-        }
-
-        function selectAnswer(selected, correct, element) {
-            const choices = document.querySelectorAll('.choice');
-            choices.forEach(choice => choice.onclick = null);
-            
-            if (selected === correct) {
-                sessionScore += 1;
-                element.classList.add('correct');
-            } else {
-                element.classList.add('incorrect');
-                // Montrer la bonne réponse
-                choices.forEach(choice => {
-                    if (choice.textContent.includes(correct.marque) && 
-                        choice.textContent.includes(correct.modele) && 
-                        choice.textContent.includes(correct.annee)) {
-                        choice.classList.add('correct');
-                    }
-                });
-            }
-            
-            document.getElementById('currentScore').textContent = sessionScore;
-            
-            setTimeout(() => {
-                currentQuestionIndex++;
-                showQuestion();
-            }, 1500);
-        }
-
-        function startSessionTimer() {
-            const timerElement = document.getElementById('timer');
-            timerElement.textContent = timeLeft;
-            
-            timer = setInterval(() => {
-                timeLeft--;
-                timerElement.textContent = timeLeft;
-                
-                if (timeLeft <= 10) {
-                    timerElement.className = 'timer critical';
-                } else if (timeLeft <= 20) {
-                    timerElement.className = 'timer warning';
-                } else {
-                    timerElement.className = 'timer';
-                }
-                
-                if (timeLeft <= 0) {
-                    endQuiz();
-                }
-            }, 1000);
-        }
-
-        function endQuiz() {
-            if (timer) {
-                clearInterval(timer);
-                timer = null;
-            }
-            
-            currentUser.gamesPlayed++;
-            currentUser.totalScore += sessionScore;
-            if (sessionScore > currentUser.bestScore) {
-                currentUser.bestScore = sessionScore;
-            }
-            
-            currentUser.history.unshift({
-                date: new Date().toLocaleDateString('fr-FR'),
-                score: sessionScore
-            });
-            
-            const newBadges = [];
-            Object.keys(badges).forEach(badgeId => {
-                if (!currentUser.badges.includes(badges[badgeId].name) && 
-                    badges[badgeId].condition(currentUser)) {
-                    currentUser.badges.push(badges[badgeId].name);
-                    newBadges.push(badges[badgeId].name);
-                }
-            });
-            
-            profiles[currentUser.id] = currentUser;
-            
-            const timeUsed = 60 - timeLeft;
-            
-            document.getElementById('finalScore').innerHTML = `
-                <h3>Score: ${sessionScore} / ${currentQuiz.length} points</h3>
-                <p>Pourcentage: ${Math.round((sessionScore / currentQuiz.length) * 100)}%</p>
-                <p>Questions répondues: ${currentQuestionIndex} / ${currentQuiz.length}</p>
-                <p>Temps utilisé: ${timeUsed} secondes</p>
-            `;
-            
-            const newBadgesDiv = document.getElementById('newBadges');
-            if (newBadges.length > 0) {
-                newBadgesDiv.innerHTML = '<h4>🎉 Nouveaux badges obtenus:</h4>' +
-                    newBadges.map(badge => `<span class="badge">${badge}</span>`).join('');
-            } else {
-                newBadgesDiv.innerHTML = '';
-            }
-            
-            showScreen('resultScreen');
-        }
-
-        function showLeaderboard() {
-            const sorted = Object.values(profiles).sort((a, b) => b.totalScore - a.totalScore);
-            const list = document.getElementById('leaderboardList');
-            list.innerHTML = '';
-            
-            if (sorted.length === 0) {
-                list.innerHTML = '<p>Aucun joueur enregistré</p>';
-            } else {
-                sorted.forEach((profile, index) => {
-                    list.innerHTML += `
-                        <div class="score-item">
-                            <span>${index + 1}. ${profile.firstName} (${profile.gamertag})</span>
-                            <span>${profile.totalScore} pts</span>
-                        </div>
-                    `;
-                });
-            }
-            
-            showScreen('leaderboardScreen');
-        }
-
-        function showHistory() {
-            const list = document.getElementById('historyList');
-            list.innerHTML = '';
-            
-            if (currentUser.history.length === 0) {
-                list.innerHTML = '<p>Aucun score enregistré</p>';
-            } else {
-                currentUser.history.forEach(game => {
-                    list.innerHTML += `
-                        <div class="score-item">
-                            <span>${game.date}</span>
-                            <span>${game.score} points</span>
-                        </div>
-                    `;
-                });
-            }
-            
-            showScreen('historyScreen');
-        }
-
-        function backToMain() {
-            if (timer) {
-                clearInterval(timer);
-                timer = null;
-            }
-            if (currentUser) {
-                updateUserStats();
-                showScreen('mainScreen');
-            } else {
-                showScreen('loginScreen');
-            }
-        }
-
-        function logout() {
-            if (timer) {
-                clearInterval(timer);
-                timer = null;
-            }
-            currentUser = null;
-            document.getElementById('firstName').value = '';
-            document.getElementById('gamertag').value = '';
-            document.getElementById('existingProfile').value = '';
-            loadExistingProfiles();
-            showScreen('loginScreen');
-        }
-
-        // Initialisation
-        loadExistingProfiles();
-    </script>
+    // Initialisation
+    window.onload = loadExistingProfiles;
+  </script>
 </body>
 </html>
