@@ -1,1 +1,36 @@
 
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Quiz Moto</title>
+</head>
+<body>
+  <h1>Bienvenue sur le Quiz Moto 🏍️</h1>
+  <button onclick="saveScore()">Enregistrer un score</button>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+    import { firebaseConfig } from './firebase-config.js';
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    window.saveScore = async function () {
+      try {
+        const docRef = await addDoc(collection(db, "scores"), {
+          user: "JoueurTest",
+          score: Math.floor(Math.random() * 100),
+          timestamp: new Date().toISOString()
+        });
+        alert("Score enregistré avec ID: " + docRef.id);
+      } catch (e) {
+        console.error("Erreur d'ajout: ", e);
+      }
+    };
+  </script>
+</body>
+</html>
+
